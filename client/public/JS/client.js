@@ -1,7 +1,11 @@
 const socket = io('ws://localhost:5000')
+let player = {}
 
 socket.on('connect', () => {
-    let choice = true
+
+    socket.on('updatePlayer', (updatedPlayer) => {
+        player = updatedPlayer
+    })
 
     document.getElementById('fish1').onclick = () => {
         socket.emit('fish1', "1 Fish selected")
@@ -23,9 +27,12 @@ socket.on('connect', () => {
     }
 
     document.getElementById('submit').onclick = () => {
-        if (choice == true) {
+        console.log(player.choice)
+        if (player.choice != 0) {
             socket.emit('submit', "Submitted")
             document.getElementById('submit').disabled = true
+        } else {
+            alert("Please select the amount of fish")
         }
 
     }
@@ -37,20 +44,35 @@ socket.on('connect', () => {
     })
 
     socket.on('scores', (players) => {
-        console.log(players)
         var playerList = players
-        console.log(playerList[0])
         var score
+        var s
         for (i = 0; i < 4; i++) {
-            console.log(playerList[i].id)
-            console.log("socket id: " + socket.id.substr(0, 4))
             if (playerList[i].id == socket.id.substr(0, 4)) {
                 score = playerList[i].score
-                console.log("accessed")
+                s = document.createElement('li')
+                s.innerHTML = "<h1> You have scored: " + playerList[i].roundScore + "</h1>"
             }
         }
-        const s = document.createElement('li')
-        s.innerHTML = "<h1> You have scored: " + score + "</h1>"
+
+        document.getElementById('score').innerHTML = score
         document.getElementById('choice').appendChild(s)
+        document.getElementById('next').hidden = false
     })
+
+    document.getElementById('next').onclick = () => {
+        console.log("Next round clicked")
+        socket.emit('nextRound')
+    }
+
+    socket.on('resetRound', (players) => {
+        document.getElementById('submit').disabled = false
+
+    })
+
+    socket.on('cheat', (msg) => {
+        console.log("cheater!")
+        alert(msg)
+    })
+
 })
