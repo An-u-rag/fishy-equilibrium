@@ -2,7 +2,7 @@
 A web collaborative and strategic game developed which applies concepts of Nash equilibrium. 
 
 Documentation 1:
-  Features
+  </br> Features
   - basic server-client connections using websocket and socket.io.
   - Logics of game implemented.
   - Round score as well as overall score.
@@ -10,7 +10,7 @@ Documentation 1:
   - QoS and Security changes
     - Disabled editing of "submit" "button" in client side HTML.
     - Can not press "submit" "button" without selected an option of amount of fish.
-  Details
+  </br> Details
   - Modules/Software Implemented Server : Node.js, Express.js, socket.io, 
   - Modules/Software Implemented Client : HTML, CSS, Javascript Vanilla, socket.io - client
   - Methodology Details : Implemented socket connectection from web server to the clients using socket.io. Event Listeners on client side are mainly click events and socket based event listeners
