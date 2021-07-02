@@ -10,8 +10,10 @@ Documentation 1:
   - QoS and Security changes
     - Disabled editing of "submit" "button" in client side HTML.
     - Can not press "submit" "button" without selected an option of amount of fish.
+
+
   </br> Details
-  - Modules/Software Implemented Server : Node.js, Express.js, socket.io, 
+  - Modules/Software Implemented Server : Node.js, Express.js, socket.io,
   - Modules/Software Implemented Client : HTML, CSS, Javascript Vanilla, socket.io - client
   - Methodology Details : Implemented socket connectection from web server to the clients using socket.io. Event Listeners on client side are mainly click events and socket based event listeners
                   </br> Whereas, the server side, the event listeners include the socket listeners as well as the express server listeners. 
