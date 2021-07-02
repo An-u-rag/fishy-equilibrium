@@ -23,6 +23,7 @@ Documentation 1 / Iteration 1:
 Documentation 2 / Iteration 2:
 - Features
   - Player can view their ID (first 4 characters of socket.id)
+  - Position of Next Round button is more accessible now.
 
 - Details
   - Methodology Details :
