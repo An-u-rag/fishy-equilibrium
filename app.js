@@ -25,9 +25,14 @@ server.listen(PORT, () => {
     console.log(`Server running on port: ${PORT}`)
 })
 
-let players = []
-let submitCount = 0
-var nextRoundCount = 0
+let _gameState = {
+    players: [],
+    submitCount: 0,
+    submit: false,
+    nextRoundCount: 0,
+    round: 0
+}
+
 
 io.on('connection', (socket) => {
     let player = {
@@ -39,7 +44,7 @@ io.on('connection', (socket) => {
         nextRound: false
     }
     player.id = socket.id.substr(0, 4)
-    players.push(player)
+    _gameState.players.push(player)
 
     setInterval(() => {
 
@@ -53,10 +58,10 @@ io.on('connection', (socket) => {
     socket.on('fish1', (message) => {
         console.log(`User with socket id: ${player.id} has selected 1 Fish`)
         player.choice = 1
-        if (containsObject(player, players)) {
+        if (containsObject(player, _gameState.players)) {
             console.log(`Changing answer to 1 for ${player.id}`)
         } else {
-            players.push(player)
+            _gameState.players.push(player)
         }
         console.log("//////////////////////////////////////////////////////////////////////////////")
     })
@@ -64,10 +69,10 @@ io.on('connection', (socket) => {
     socket.on('fish2', (message) => {
         console.log(`User with socket id: ${player.id} has selected 2 Fish`)
         player.choice = 2
-        if (containsObject(player, players)) {
+        if (containsObject(player, _gameState.players)) {
             console.log(`Changing answer to 2 for ${player.id}`)
         } else {
-            players.push(player)
+            _gameState.players.push(player)
         }
         console.log("//////////////////////////////////////////////////////////////////////////////")
     })
@@ -75,7 +80,7 @@ io.on('connection', (socket) => {
     socket.on('submit', () => {
         if (player.submit == false) {
             player.submit = true
-            submitCount++
+            _gameState.submitCount++
         } else {
             console.log(player.id + " is breaking the rules")
             io.to(socket.id).emit('cheat', "Please don't try to edit the HTML or you will be disqualified!")
@@ -83,9 +88,9 @@ io.on('connection', (socket) => {
 
         socket.broadcast.to(socket.id).emit('submitstop', "stop")
 
-        if (submitCount == 4) {
+        if (_gameState.submitCount == 4) {
             io.emit('submitconfirm', "Everyone has submitted, processing results...")
-            choiceList = players.map((p) => {
+            choiceList = _gameState.players.map((p) => {
                 return p.choice
             })
             let countoftwo = 0
@@ -99,26 +104,26 @@ io.on('connection', (socket) => {
             console.log("count of two: " + countoftwo)
             switch (countoftwo) {
                 case 0:
-                    players.forEach(p => {
+                    _gameState.players.forEach(p => {
                         p.score = p.score + 25;
                         p.roundScore = 25
                     })
                     console.log("accesed 1111")
                     break;
                 case 1:
-                    players.forEach(p => p.choice == 1 ? (p.score = p.score + 0, p.roundScore = 0) : (p.score = p.score + 75, p.roundScore = 75))
+                    _gameState.players.forEach(p => p.choice == 1 ? (p.score = p.score + 0, p.roundScore = 0) : (p.score = p.score + 75, p.roundScore = 75))
                     console.log("accesed 2111")
                     break;
                 case 2:
-                    players.forEach(p => p.choice == 1 ? (p.score = p.score - 12.5, p.roundScore = -12.5) : (p.score = p.score + 50, p.roundScore = 50))
+                    _gameState.players.forEach(p => p.choice == 1 ? (p.score = p.score - 12.5, p.roundScore = -12.5) : (p.score = p.score + 50, p.roundScore = 50))
                     console.log("accesed 2211")
                     break;
                 case 3:
-                    players.forEach(p => p.choice == 1 ? (p.score = p.score - 25, p.roundScore = -25) : (p.score = p.score + 25, p.roundScore = 25))
+                    _gameState.players.forEach(p => p.choice == 1 ? (p.score = p.score - 25, p.roundScore = -25) : (p.score = p.score + 25, p.roundScore = 25))
                     console.log("accesed 2221")
                     break;
                 case 4:
-                    players.forEach(p => {
+                    _gameState.players.forEach(p => {
                         p.score = p.score - 25;
                         p.roundScore = -25
                     })
@@ -126,34 +131,41 @@ io.on('connection', (socket) => {
                     break;
             }
 
-            io.emit('scores', players)
-            players.forEach(p => console.log(p.id + " chose: " + p.choice + " ; and has score of " + p.score))
-            nextRoundCount = 0
-            submitCount = 0
+            io.emit('scores', _gameState.players)
+            _gameState.players.forEach(p => console.log(p.id + " chose: " + p.choice + " ; and has score of " + p.score, p.nextRound = false))
+            _gameState.nextRoundCount = 0
+            _gameState.submitCount = 0
         }
     })
 
 
     socket.on('nextRound', () => {
-        nextRoundCount++
-        if (nextRoundCount === 4) {
-            players.forEach(p => {
+        if (player.nextRound == false && _gameState.nextRoundCount != 4) {
+            _gameState.nextRoundCount++
+                player.nextRound = true
+            console.log(_gameState.nextRoundCount)
+        }
+        if (_gameState.nextRoundCount === 4) {
+            console.log("2 " + _gameState.nextRoundCount)
+            _gameState.round++
+                _gameState.nextRoundCount = -1
+            _gameState.players.forEach(p => {
                 p.submit = false
                 p.choice = 0
                 p.nextRound = false
-                console.log("3" + player.submit)
             })
-            io.emit('resetRound', players)
+            io.emit('resetRound', _gameState.players)
         }
     })
 
     socket.on('disconnect', () => {
-        for (var i = 0; i < players.length; i++) {
-            if (players[i].id === player.id) {
-                players.splice(i, 1)
+        for (var i = 0; i < _gameState.players.length; i++) {
+            if (_gameState.players[i].id === player.id) {
+                _gameState.players.splice(i, 1)
             }
         }
         console.log(`User with socket id ${player.id} has disconnected`)
+        console.log(_gameState.players)
     })
 
 })

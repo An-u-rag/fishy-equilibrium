@@ -7,6 +7,11 @@ socket.on('connect', () => {
         player = updatedPlayer
     })
 
+    document.getElementById('getid').onclick = () => {
+        document.getElementById('username').innerHTML = player.id
+        document.getElementById('getid').hidden = true
+    }
+
     document.getElementById('fish1').onclick = () => {
         socket.emit('fish1', "1 Fish selected")
         let choice = "You selected 1 Fish";
