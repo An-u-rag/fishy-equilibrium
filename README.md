@@ -1,7 +1,7 @@
 # FishyEquilibrium
 A web collaborative and strategic game developed which applies concepts of Nash equilibrium. 
 
-Documentation 1:
+Documentation 1 / Iteration 1:
 - Features
   - basic server-client connections using websocket and socket.io.
   - Logics of game implemented.
