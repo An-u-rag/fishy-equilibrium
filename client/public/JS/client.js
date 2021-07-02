@@ -7,6 +7,10 @@ socket.on('connect', () => {
         player = updatedPlayer
     })
 
+    // setInterval(() => {
+    //     document.getElementById('username').innerHTML = player.id
+    // }, 100)
+
     document.getElementById('getid').onclick = () => {
         document.getElementById('username').innerHTML = player.id
         document.getElementById('getid').hidden = true
