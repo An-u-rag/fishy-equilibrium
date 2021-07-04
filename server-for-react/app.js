@@ -34,7 +34,7 @@ let _gameState = {
     submitCount: 0,
     submit: false,
     nextRoundCount: 0,
-    round: 0
+    round: 1
 }
 
 
@@ -52,13 +52,23 @@ io.on('connection', (socket) => {
 
     setInterval(() => {
 
-        io.to(socket.id).emit('updatePlayer', player)
+        socket.emit('updatePlayer', player)
 
     }, 10)
 
-    socket.on('sendState', (playerSend) => {
-        socket.broadcast.emit('updatePlayerState', playerSend)
+    
+    socket.on('sendStateUpdate', (data) => {
+        socket.broadcast.emit('updatePlayerState', data)
+        console.log(data.name + " : " + data.state)
     })
+
+    socket.on('sendMainState', (state) => {
+        socket.broadcast.emit('updateMainPlayerState', (player.name , state))
+    })
+
+    if(_gameState.round >= 5){
+        io.emit('festival', "FESTIVAL DAY! Scores are multiplied by 10 for this round.")
+    }
 
     socket.on('join', (nickname, callback) => {
         let existingUser_error = false
@@ -152,42 +162,52 @@ io.on('connection', (socket) => {
             }
 
             console.log("count of two: " + countoftwo)
+            console.log(_gameState.round)
+            let multiplier
+            if(_gameState.round >= 5){
+                multiplier = 10
+            }else {
+                multiplier = 1
+            }
             switch (countoftwo) {
                 case 0:
                     _gameState.players.forEach(p => {
-                        p.score = p.score + 25;
-                        p.roundScore = 25
+                        p.score = p.score + (25 * multiplier);
+                        p.roundScore = 25 * multiplier
                     })
                     console.log("accesed 1111")
                     break;
                 case 1:
-                    _gameState.players.forEach(p => p.choice == 1 ? (p.score = p.score + 0, p.roundScore = 0) : (p.score = p.score + 75, p.roundScore = 75))
+                    _gameState.players.forEach(p => p.choice == 1 ? (p.score = p.score + (0* multiplier), p.roundScore = (0* multiplier)) : (p.score = p.score + (75* multiplier), p.roundScore = (75* multiplier)))
                     console.log("accesed 2111")
                     break;
                 case 2:
-                    _gameState.players.forEach(p => p.choice == 1 ? (p.score = p.score - 12.5, p.roundScore = -12.5) : (p.score = p.score + 50, p.roundScore = 50))
+                    _gameState.players.forEach(p => p.choice == 1 ? (p.score = p.score -( 12.5* multiplier), p.roundScore = (-12.5* multiplier)) : (p.score = p.score + (50* multiplier), p.roundScore = (50* multiplier)))
                     console.log("accesed 2211")
                     break;
                 case 3:
-                    _gameState.players.forEach(p => p.choice == 1 ? (p.score = p.score - 25, p.roundScore = -25) : (p.score = p.score + 25, p.roundScore = 25))
+                    _gameState.players.forEach(p => p.choice == 1 ? (p.score = p.score -( 25* multiplier), p.roundScore = (-25* multiplier)) : (p.score = p.score + (25* multiplier), p.roundScore = (25* multiplier)))
                     console.log("accesed 2221")
                     break;
                 case 4:
                     _gameState.players.forEach(p => {
-                        p.score = p.score - 25;
-                        p.roundScore = -25
+                        p.score = p.score - (25* multiplier);
+                        p.roundScore = -(25* multiplier)
                     })
                     console.log("accesed 2222")
                     break;
             }
-
-            io.emit('scores', _gameState.players)
+            io.emit('openNext')
             _gameState.players.forEach(p => console.log(p.id + " chose: " + p.choice + " ; and has score of " + p.score, p.nextRound = false))
             _gameState.nextRoundCount = 0
             _gameState.submitCount = 0
             io.emit('syncPlayers', "syncing")
         }
     })
+
+    if(_gameState.submitCount === 4 && _gameState.nextRoundCount === 0){
+        socket.emit('scores', {score: player.score, roundScore: player.roundScore})
+    }
 
 
     socket.on('nextRound', () => {
@@ -204,7 +224,8 @@ io.on('connection', (socket) => {
                 p.choice = 0
                 p.nextRound = false
             })
-            io.emit('resetRound', _gameState.players)
+            console.log(_gameState.round)
+            io.emit('resetRound', _gameState.round)
         }
     })
 

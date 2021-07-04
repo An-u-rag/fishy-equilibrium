@@ -17,10 +17,12 @@ const Game = ({ location }) => {
     const [messages,setMessages] = useState([])
     const [choice, setChoice] = useState(0)
     const [clientMessage, setclientMessage] = useState('')
+    const [clientMessages, setclientMessages] = useState([])
     const [PlayerState, setPlayerState] = useState('')
-    const [Opp, setOpp] = useState({name:'BOT',state:'Yikers'})
+    const [Opp, setOpp] = useState({name:'BOT',state:'botting'})
     const [Opps, setOpps] = useState([])
     const [Sync, setSync] = useState('')
+    const [round, setRound] = useState(1)
 
     const ENDPOINT = 'ws://localhost:5000'
 
@@ -50,16 +52,18 @@ const Game = ({ location }) => {
             setclientMessage(msg)
         })
 
-    }, []) 
+    }, [])
+    
+    useEffect(() => {
+        setclientMessages(...clientMessages, clientMessage)
+        setclientMessage('')
+    },[clientMessage])
 
     // effect to receive a welcome message
     useEffect(() => {
         socket.on('welcome', (msg) => {
             setMessages([...messages, msg])
             setPlayerState('Picking')
-            console.log("welcome accessed")
-            console.log(Opp)
-            console.log(player)
         })
 
     }, [messages])
@@ -70,57 +74,44 @@ const Game = ({ location }) => {
         socket.on('updatePlayer', (updatedPlayer) => {
             setPlayer(updatedPlayer)
         })
-        
-        socket.on('updatePlayerState', (opponent) => {
-            if(opponent.name !== player.name){
-                setOpp(opponent)
-            }
-        })
+
     })
 
     useEffect(() => {
         let exist = false
-        console.log(Opps)
         Opps.forEach(opponent => {
-            console.log(opponent.name +":"+Opp.name)
             
             if(opponent.name === Opp.name)
             {
-                console.log("Accessed")
                 exist = true
             }
         })
-        if(exist == false){
+        if(exist === false){
             setOpps([...Opps,Opp])
-            console.log("exist is false and " + Opp.name + " added")
         } else {
             setOpps(Opps.map((opp) => (opp.id === Opp.id ? Opp : opp )))
-            console.log("exist is true and " + Opp.name + " been updated")
-            setOpps(Opps.filter(opp => opp.name !== ""))
         }
 
     },[Opp])
 
     useEffect(()=>{
+            console.log(player)
+            console.log(" inside main useeffect")
 
-        let playerSend = player
-        playerSend.name = name
-        playerSend.id = player.id
-        playerSend.choice = undefined
-        playerSend.score = player.score
-        playerSend.roundScore =player.roundScore
-        playerSend.state = PlayerState
+            if(player.name !== undefined && player.name !== "" && player.score !== undefined && player.roundScore !== undefined){
+                player.state = PlayerState
+                console.log("Send accessed")
+                socket.emit('sendStateUpdate', {id: player.id, name: name, state: PlayerState, score: player.score, roundScore : player.roundScore})
+            }
 
-        socket.emit('sendState', playerSend)
+            if(Sync===true){
+                console.log("inside sync true")
+                setSync(false)
+                setPlayerState('Picking')
+            }
+        
 
-        console.log(PlayerState)
-
-        if(Sync === true){
-            setSync(false)
-            setPlayerState('Picking')
-        }
-
-    },[PlayerState, Sync])
+    },[PlayerState, player.name,player.score,player.roundScore])
 
     useEffect(() => {
 
@@ -145,16 +136,36 @@ const Game = ({ location }) => {
             setMessage(msg)
         })
 
-        socket.on('resetRound', (players) => {
+        socket.on('resetRound', (gameStateRound) => {
             document.getElementById('submit').disabled = false
             setChoice(0)
             setMessage('')
+            console.log("Game round: " + gameStateRound)
+            setRound(gameStateRound)
+            setPlayerState('Picking')
+            console.log(round)
         })
 
-        socket.on('scores', (players) => {
-            var playerList = players
-            
+        socket.on('festival', (msg) => {
+            document.getElementById('festival').innerHTML = msg
+        })
+
+        socket.on('scores', (scores) => {
+            player.score = scores.score
+            player.roundScore = scores.roundScore
+            console.log(player, "in scores")
+        })
+
+        socket.on('openNext', () => {
             document.getElementById('next').hidden = false
+        })
+
+        socket.on('updatePlayerState', (opponent) => {
+            if(opponent.name !== name){
+                setOpp(opponent)
+                console.log(name + " identified " + opponent.name)
+                console.log(opponent)
+            }
         })
 
     },[])
@@ -211,11 +222,14 @@ const Game = ({ location }) => {
             <Video />
             <h1>Welcome to Fishy Equilibrium</h1>
             <h2> Hello {name}! </h2>
-        
+            <h1 id="festival"></h1>
+
+            <br />
+            <h1>Round: {round}</h1>
             <Stats player={player} Opps={Opps}/>
             <br/>
             <br />
-            <h3>{message}</h3>
+            <h3 style={{color:"white"}}>{message}</h3>
             
             <div className="container">
 
@@ -229,11 +243,12 @@ const Game = ({ location }) => {
                     <br/><br/>
                 </div>
                 
-                <div>
+                <div style={{backgroundColor:"palegoldenrod"}}>
                     <h1>Chat Box</h1>
                     <ul>
-                        <li>
-                            {clientMessage}
+                        <li style={{color:"blue"}}>
+                        
+
                         </li>
                     </ul>
                 </div>
