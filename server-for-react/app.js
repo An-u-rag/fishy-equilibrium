@@ -62,10 +62,6 @@ io.on('connection', (socket) => {
         console.log(data.name + " : " + data.state)
     })
 
-    socket.on('sendMainState', (state) => {
-        socket.broadcast.emit('updateMainPlayerState', (player.name , state))
-    })
-
     if(_gameState.round >= 5){
         io.emit('festival', "FESTIVAL DAY! Scores are multiplied by 10 for this round.")
     }
@@ -97,7 +93,7 @@ io.on('connection', (socket) => {
 
     socket.on('sendMessage', (message, callback) => {
         console.log(message)
-        socket.broadcast.emit('receiveMessage', message)
+        io.emit('receiveMessage', {user : player.name , text : message})
         return callback({user:`${player.name}`, text:`${message}`})
     })
 

@@ -1,0 +1,15 @@
+.outerChatContainer {
+    margin: 10px 25% 10px 25%;
+    word-wrap: break-word;
+    background-color: rgba(109, 177, 53, 0.733);
+    border-radius: 20px;
+    padding: 5px 10px 5px 10px;
+}
+
+.outerChatContainer .listContainer {
+    word-wrap: break-word;
+    background-color: rgba(70, 153, 153, 0.712);
+    list-style: none;
+    line-height: 2rem;
+    text-align: left;
+}

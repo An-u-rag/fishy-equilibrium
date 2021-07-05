@@ -4,6 +4,7 @@ import { Redirect } from 'react-router-dom'
 import io from 'socket.io-client'
 import css from './game.css'
 import Stats from '../Stats/stats'
+import Chat from '../Chat/chat'
 
 import Video from '../Video/video'
 
@@ -16,7 +17,7 @@ const Game = ({ location }) => {
     const [message,setMessage] = useState('')
     const [messages,setMessages] = useState([])
     const [choice, setChoice] = useState(0)
-    const [clientMessage, setclientMessage] = useState('')
+    const [clientMessage, setclientMessage] = useState({})
     const [clientMessages, setclientMessages] = useState([])
     const [PlayerState, setPlayerState] = useState('')
     const [Opp, setOpp] = useState({name:'BOT',state:'botting'})
@@ -49,14 +50,16 @@ const Game = ({ location }) => {
     useEffect(() => {
 
         socket.on('receiveMessage', (msg) => {
+            if(msg.user == player.name){
+                msg.user = 'You'
+            }
             setclientMessage(msg)
         })
 
     }, [])
     
     useEffect(() => {
-        setclientMessages(...clientMessages, clientMessage)
-        setclientMessage('')
+        setclientMessages([...clientMessages, clientMessage])
     },[clientMessage])
 
     // effect to receive a welcome message
@@ -95,17 +98,13 @@ const Game = ({ location }) => {
     },[Opp])
 
     useEffect(()=>{
-            console.log(player)
-            console.log(" inside main useeffect")
 
             if(player.name !== undefined && player.name !== "" && player.score !== undefined && player.roundScore !== undefined){
                 player.state = PlayerState
-                console.log("Send accessed")
                 socket.emit('sendStateUpdate', {id: player.id, name: name, state: PlayerState, score: player.score, roundScore : player.roundScore})
             }
 
             if(Sync===true){
-                console.log("inside sync true")
                 setSync(false)
                 setPlayerState('Picking')
             }
@@ -140,10 +139,8 @@ const Game = ({ location }) => {
             document.getElementById('submit').disabled = false
             setChoice(0)
             setMessage('')
-            console.log("Game round: " + gameStateRound)
             setRound(gameStateRound)
             setPlayerState('Picking')
-            console.log(round)
         })
 
         socket.on('festival', (msg) => {
@@ -153,7 +150,6 @@ const Game = ({ location }) => {
         socket.on('scores', (scores) => {
             player.score = scores.score
             player.roundScore = scores.roundScore
-            console.log(player, "in scores")
         })
 
         socket.on('openNext', () => {
@@ -163,8 +159,6 @@ const Game = ({ location }) => {
         socket.on('updatePlayerState', (opponent) => {
             if(opponent.name !== name){
                 setOpp(opponent)
-                console.log(name + " identified " + opponent.name)
-                console.log(opponent)
             }
         })
 
@@ -176,7 +170,6 @@ const Game = ({ location }) => {
         }else if(choice === 2){
             socket.emit('fish2', "2 Fish selected")
         }
-        console.log(Opps)
 
     }, [choice])
 
@@ -208,7 +201,6 @@ const Game = ({ location }) => {
     }
 
     const sendNext = (event) => {
-        console.log("Next round clicked")
         socket.emit('nextRound')
         setPlayerState("Next->")
     }
@@ -242,16 +234,8 @@ const Game = ({ location }) => {
                     <button id="next" hidden onClick={(event => ( player.submit===true ? sendNext(event) : event.preventDefault() ))}>Next Round</button>
                     <br/><br/>
                 </div>
-                
-                <div style={{backgroundColor:"palegoldenrod"}}>
-                    <h1>Chat Box</h1>
-                    <ul>
-                        <li style={{color:"blue"}}>
-                        
 
-                        </li>
-                    </ul>
-                </div>
+                <Chat clientMessages={clientMessages}/>
                 
 
                 <input value={message} onChange={(event) => setMessage(event.target.value)} onKeyPress={event => event.key === 'Enter' ? sendMessage(event) : null}/>
