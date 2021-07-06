@@ -81,7 +81,7 @@ const Game = ({ location }) => {
     })
 
     useEffect(() => {
-        let exist = false
+        var exist = false
         Opps.forEach(opponent => {
             
             if(opponent.name === Opp.name)

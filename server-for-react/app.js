@@ -68,7 +68,7 @@ io.on('connection', (socket) => {
 
     socket.on('join', (nickname, callback) => {
         let existingUser_error = false
-        for(var i=0;i<_gameState.players.length;i++){
+        for(let i=0;i<_gameState.players.length;i++){
             if(_gameState.players[i].name == nickname){
                 existingUser_error = true
             }
@@ -88,8 +88,6 @@ io.on('connection', (socket) => {
             //socket.join(player.room)
         }   
     })
-
-    let ghostPlayerError = false 
 
     socket.on('sendMessage', (message, callback) => {
         console.log(message)
@@ -137,7 +135,7 @@ io.on('connection', (socket) => {
         socket.broadcast.to(socket.id).emit('submitstop', "stop")
 
         let allChoiceError = false
-        for(var i=0;i<_gameState.players.length;i++){
+        for(let i=0;i<_gameState.players.length;i++){
             if(_gameState.players[i].choice === 0){
                 allChoiceError = true
             }
@@ -226,7 +224,7 @@ io.on('connection', (socket) => {
     })
 
     socket.on('disconnect', () => {
-        for (var i = 0; i < _gameState.players.length; i++) {
+        for (let i = 0; i < _gameState.players.length; i++) {
             if (_gameState.players[i].name === player.name) {
                 console.log(`${player.name} has disconnected`)
                 _gameState.players.splice(i, 1)
@@ -238,7 +236,7 @@ io.on('connection', (socket) => {
 })
 
 function containsObject(obj, list) {
-    var x;
+    let x;
     for (x in list) {
         if (list[x] === obj) {
             return true;
