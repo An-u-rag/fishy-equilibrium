@@ -36,3 +36,32 @@ Documentation 2 / Iteration 2:
   - Known Issues :
     - The game can only be played properly between 4 people with constant connection. If a player leaves, the game can not proceed to next round as it requires 4 votes to move on. However, if a new player joins, the game can move on. However, only that new user will have a clean slate of score, the rest of the players still will have the previous scores. This is assuming the player joins before a round starts. If the 4th player leaves after clicking "Submit" but NOT "Next Round", then the game will be stuck forever and the server needs to be restarted.
                  
+Documentation 3 / Iteration 3 - React Integration:
+  - Features
+    - React added for frontend and complete UI Overhaul.
+    - UI is more crisp and User friendly as well as organised.
+    - Instructions added and Game Objective added.
+    - Join Feature in to the room of 4 players with a nickname.
+    - Player Stats are shown as well as other Players in the lobby.
+    - Simple Chat box
+  - Details
+    - Methodology Details : 
+      - Implemented a frontend or a client side javascript framework called React which is served requests from the Node.js server on the backend.
+      - React dynamically updates the components of the DOM without the need for refreshing the page. It is used as a UI component renderer and view handler.
+      - The stats are fetched in real time for the player from the server and displayed.
+      - React also listens for incoming socket messages and loads it into the DOM. The DOM is also not just a HTML rather a JSX which allows us to put HTML into Javascript.
+    - Known Issues :
+      - The Player data of opponents is not synced and is "1 tick" behind loosely stated.
+      - THe chat box is very primitivve and hence is vulnerable to errors.
+ 
+Documentation 4 / Iteration 4 - React Integration fixes:
+  - Features
+    - Added Rounds Feature on the screen.
+    - Festival Rounds added with a 10x multiplier for that round scores.
+    - Chat feature is upgraded to include all the messages as well.
+    - All players are now synced in real time.
+    - Each player's status between "Picking", "Syncing", "Picked", "Submitted" and "Next->" are shown in real-time.
+  - Details
+    - Fixed Issues:
+      - Stats of players are now in real time and not out of sync by 1 round or 1 tick
+      - The chat is now better and all four people can communicate easily without confusion.
